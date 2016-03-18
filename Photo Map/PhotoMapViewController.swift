@@ -9,7 +9,7 @@
 import UIKit
 import MapKit
 
-class PhotoMapViewController: UIViewController, UINavigationControllerDelegate, UIImagePickerControllerDelegate, LocationsViewControllerDelegate {
+class PhotoMapViewController: UIViewController, UINavigationControllerDelegate, UIImagePickerControllerDelegate, LocationsViewControllerDelegate, MKMapViewDelegate {
 
     
     @IBOutlet weak var mapViewOutlet: MKMapView!
@@ -23,7 +23,7 @@ class PhotoMapViewController: UIViewController, UINavigationControllerDelegate, 
         mapViewOutlet.setRegion(sfRegion, animated: false)
 
         
-        
+        mapViewOutlet.delegate = self
 
         // Do any additional setup after loading the view.
     }
@@ -56,14 +56,33 @@ class PhotoMapViewController: UIViewController, UINavigationControllerDelegate, 
                 self.performSegueWithIdentifier("tagSegue", sender: self)
             })
     }
+    
+    func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
+        let reuseID = "myAnnotationView"
+        
+        var annotationView = mapViewOutlet.dequeueReusableAnnotationViewWithIdentifier(reuseID)
+        if (annotationView == nil) {
+            annotationView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseID)
+            annotationView!.canShowCallout = true
+            annotationView!.leftCalloutAccessoryView = UIImageView(frame: CGRect(x:0, y:0, width: 50, height:50))
+        }
+        
+        let imageView = annotationView?.leftCalloutAccessoryView as! UIImageView
+        imageView.image = theImage
+        
+        return annotationView
+    }
 
     func locationsPickedLocation(controller: LocationsViewController, latitude: NSNumber, longitude: NSNumber) {
         let annotation = MKPointAnnotation()
-        annotation.coordinate = CLLocationCoordinate2D(latitude: latitude as Double, longitude: longitude as Double)
+        let locationCoordinate = CLLocationCoordinate2D(latitude: latitude as Double, longitude: longitude as Double)
+        annotation.coordinate = locationCoordinate
         annotation.title = "Picture!"
         mapViewOutlet.addAnnotation(annotation)
         navigationController?.popToViewController(self, animated: true)
     }
+    
+    
     
     // MARK: - Navigation
 
